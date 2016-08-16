@@ -65,11 +65,15 @@
 
 - (void)locationManager:(CLLocationManager *)manager didUpdateHeading:(CLHeading *)newHeading
 {
-    currentHeading =  fmod(newHeading.trueHeading, 360.0);
+    currentHeading =  fmod(newHeading.magneticHeading, 360.0);
 }
 - (void)locationManager:(CLLocationManager *)manager didFailWithError:(NSError *)error
 {
     NSLog(@"Failed to update Loc: %@", error);
+}
+
+- (void)locationManager:(CLLocationManager *)manager didChangeAuthorizationStatus:(CLAuthorizationStatus)status {
+    NSLog(@"Location manager changed authorizations status: %d", status);
 }
 
 - (void)pollAccellerometerForVerticalPosition
@@ -91,6 +95,11 @@
 {
     deviceViewHeight = deviceScreenSize.height;
     
+    if ([CLLocationManager authorizationStatus] == kCLAuthorizationStatusNotDetermined) {
+        NSLog(@"Location authorization status is Not Determined");
+        [self.locationManager requestWhenInUseAuthorization];
+    }
+    NSLog(@"Heading available: %@", [CLLocationManager headingAvailable] ? @"Yes" : @"No");
     [self.locationManager startUpdatingHeading];
     [self.motionManager startAccelerometerUpdates];
     
